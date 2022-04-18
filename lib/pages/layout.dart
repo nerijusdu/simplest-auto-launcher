@@ -72,7 +72,10 @@ class _LayoutState extends State<Layout> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-              child: _pages[selectedIndex],
+              child: Container(
+                height: MediaQuery.of(context).size.height - 100,
+                child: _pages[selectedIndex],
+              ),
             ),
           ],
         ),

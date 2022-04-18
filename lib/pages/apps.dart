@@ -32,7 +32,13 @@ class _AppsPageState extends State<AppsPage> {
   @override
   Widget build(BuildContext context) {
     if (apps.isEmpty) {
-      return const CircularProgressIndicator();
+      return const Center(
+        child: SizedBox(
+          height: 50,
+          width: 50,
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     return ListView.builder(
