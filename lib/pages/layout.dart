@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:simplest_auto_launcher/pages/apps.dart';
 import 'package:simplest_auto_launcher/pages/home.dart';
+import 'package:simplest_auto_launcher/pages/settings.dart';
 
-const List<Widget> _pages = <Widget>[HomePage(), AppsPage()];
+const List<Widget> _pages = <Widget>[
+  HomePage(),
+  AppsPage(),
+  SettingsPage(),
+];
 
 class Layout extends StatefulWidget {
   const Layout({Key? key}) : super(key: key);
@@ -45,12 +50,11 @@ class _LayoutState extends State<Layout> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1F272D),
       body: SafeArea(
         child: Column(
           children: [
             BottomNavigationBar(
-              backgroundColor: const Color(0xFF1F272D),
+              // backgroundColor: const Color(0xFF2e363e),
               items: const [
                 BottomNavigationBarItem(
                   icon: Icon(Icons.home),
@@ -59,6 +63,10 @@ class _LayoutState extends State<Layout> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.apps),
                   label: 'Apps',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings),
+                  label: 'Settings',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.dark_mode),
@@ -72,7 +80,7 @@ class _LayoutState extends State<Layout> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-              child: Container(
+              child: SizedBox(
                 height: MediaQuery.of(context).size.height - 100,
                 child: _pages[selectedIndex],
               ),

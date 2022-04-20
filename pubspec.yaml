@@ -37,6 +37,7 @@ dependencies:
   device_apps: ^2.2.0
   spotify_sdk: ^2.2.0
   flutter_dotenv: ^5.0.2
+  shared_preferences: ^2.0.13
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,4 @@
-import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -13,6 +13,7 @@ class AudioPlayer extends StatefulWidget {
 
 class _AudioPlayerState extends State<AudioPlayer> {
   bool isPlaying = false;
+  Uint8List? image;
 
   @override
   void initState() {
@@ -28,8 +29,25 @@ class _AudioPlayerState extends State<AudioPlayer> {
     );
     var isActive = await SpotifySdk.isSpotifyAppActive;
     var state = await SpotifySdk.getPlayerState();
+
     setState(() {
       isPlaying = isActive && (state == null || !state.isPaused);
+    });
+
+    subscribeTrackImage();
+  }
+
+  void subscribeTrackImage() {
+    SpotifySdk.subscribePlayerState().listen((state) async {
+      if (state.track?.imageUri.raw != null) {
+        final image = await SpotifySdk.getImage(
+          imageUri: state.track!.imageUri,
+          dimension: ImageDimension.xSmall,
+        );
+        setState(() {
+          this.image = image;
+        });
+      }
     });
   }
 
@@ -55,29 +73,49 @@ class _AudioPlayerState extends State<AudioPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        IconButton(
-          onPressed: prevSong,
-          alignment: Alignment.center,
-          iconSize: 50,
-          icon: const Icon(Icons.skip_previous_rounded),
-        ),
-        IconButton(
-          onPressed: playPause,
-          alignment: Alignment.center,
-          iconSize: 50,
-          icon: Icon(
-            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+        if (image != null)
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                image: image != null
+                    ? DecorationImage(
+                        image: MemoryImage(image!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+            ),
           ),
-        ),
-        IconButton(
-          onPressed: nextSong,
-          alignment: Alignment.center,
-          iconSize: 50,
-          icon: const Icon(Icons.skip_next_rounded),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              onPressed: prevSong,
+              alignment: Alignment.center,
+              iconSize: 50,
+              icon: const Icon(Icons.skip_previous_rounded),
+            ),
+            IconButton(
+              onPressed: playPause,
+              alignment: Alignment.center,
+              iconSize: 50,
+              icon: Icon(
+                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              ),
+            ),
+            IconButton(
+              onPressed: nextSong,
+              alignment: Alignment.center,
+              iconSize: 50,
+              icon: const Icon(Icons.skip_next_rounded),
+            ),
+          ],
         ),
       ],
     );

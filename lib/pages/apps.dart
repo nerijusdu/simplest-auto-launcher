@@ -1,5 +1,8 @@
 import 'package:device_apps/device_apps.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../models/app_with_state.dart';
 
 class AppsPage extends StatefulWidget {
   const AppsPage({Key? key}) : super(key: key);
@@ -9,7 +12,7 @@ class AppsPage extends StatefulWidget {
 }
 
 class _AppsPageState extends State<AppsPage> {
-  List<Application> apps = [];
+  List<AppWithState> apps = [];
 
   @override
   void initState() {
@@ -18,15 +21,31 @@ class _AppsPageState extends State<AppsPage> {
   }
 
   void loadApps() async {
-    var apps = await DeviceApps.getInstalledApplications(
+    final prefs = await SharedPreferences.getInstance();
+    final favoriteApps = prefs.getStringList('favoriteApps') ?? [];
+    final apps = await DeviceApps.getInstalledApplications(
       includeAppIcons: true,
       includeSystemApps: true,
       onlyAppsWithLaunchIntent: true,
     );
     apps.sort((a, b) => a.appName.compareTo(b.appName));
+
     setState(() {
-      this.apps = apps;
+      this.apps = apps
+          .map((x) => AppWithState.withIcon(
+                x as ApplicationWithIcon,
+                favoriteApps.contains(x.packageName),
+              ))
+          .toList();
     });
+  }
+
+  Future saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setStringList(
+      'favoriteApps',
+      apps.where((x) => x.isFavorite).map((x) => x.package).toList(),
+    );
   }
 
   @override
@@ -46,11 +65,18 @@ class _AppsPageState extends State<AppsPage> {
       itemBuilder: (context, index) {
         final app = apps[index];
         return ListTile(
-          title: Text(app.appName),
-          leading: app is ApplicationWithIcon
-              ? CircleAvatar(backgroundImage: MemoryImage(app.icon))
-              : null,
-          onTap: () => DeviceApps.openApp(app.packageName),
+          title: Text(app.name),
+          leading: CircleAvatar(backgroundImage: MemoryImage(app.icon)),
+          trailing: IconButton(
+            icon: Icon(app.isFavorite ? Icons.favorite : Icons.favorite_border),
+            onPressed: () {
+              setState(() {
+                app.isFavorite = !app.isFavorite;
+              });
+              saveFavorites();
+            },
+          ),
+          onTap: app.open,
         );
       },
     );
